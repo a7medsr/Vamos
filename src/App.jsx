@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { CONFIG } from './config.js'
+import { CONFIG, getWorkshopInfo } from './config.js'
 import { COURSES, PACKAGE, CONVERSATION, TESTIMONIALS } from './data.js'
 import { CourseCard } from './CourseCard.jsx'
 import { ContactForm } from './ContactForm.jsx'
 import { I } from './icons.jsx'
+import AdminPage from './AdminPage.jsx'
 
 const WA_HREF =
   `https://wa.me/${CONFIG.whatsappNumber}?text=` +
@@ -71,7 +72,9 @@ export default function App() {
   const [navOpen, setNavOpen] = useState(false)
   const [toast, setToast] = useState({ msg: '', kind: 'ok', show: false })
   const [preselectedCourse, setPreselectedCourse] = useState('')
-  const cd = useCountdown(CONFIG.workshop.date)
+  const [showAdmin, setShowAdmin] = useState(false)
+  const workshopInfo = getWorkshopInfo()
+  const cd = useCountdown(workshopInfo.isoDate)
 
   useReveal()
 
@@ -127,7 +130,7 @@ export default function App() {
     <>
       {/* ========== ANNOUNCEMENT ========== */}
       <div className="announce">
-        🎁 ورشة مجانية يوم <span>الجمعة 15 مايو 2026</span> —{' '}
+        🎁 ورشة مجانية يوم <span>{workshopInfo.dateDisplay}</span> —{' '}
         <a href="#workshop" onClick={navClick('workshop')}>سجّل دلوقتي ←</a>
       </div>
 
@@ -135,8 +138,7 @@ export default function App() {
       <nav className="nav">
         <div className="nav-inner">
           <a href="#" className="logo" aria-label="Vamos Academy" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }) }}>
-            <div className="logo-mark"><span>V</span></div>
-            <div className="logo-text">Va<em>mos</em></div>
+            <img src="/logo.png" alt="Vamos Languages Academy" className="logo-img" />
           </a>
           <div className={`nav-links ${navOpen ? 'open' : ''}`}>
             <a href="#workshop" onClick={navClick('workshop')}>الورشة المجانية</a>
@@ -223,8 +225,8 @@ export default function App() {
               </p>
 
               <div className="workshop-meta">
-                <div className="wmeta"><I.Calendar /><span>الجمعة <b>15 مايو 2026</b></span></div>
-                <div className="wmeta"><I.Clock /><span><b>8:00 مساءً</b> بتوقيت القاهرة</span></div>
+                <div className="wmeta"><I.Calendar /><span>{workshopInfo.dayName} <b>{workshopInfo.dayNum} {workshopInfo.monthName} {workshopInfo.year}</b></span></div>
+                <div className="wmeta"><I.Clock /><span><b>{workshopInfo.timeDisplay}</b> بتوقيت القاهرة</span></div>
                 <div className="wmeta"><I.Video /><span>أونلاين على <b>Zoom</b></span></div>
               </div>
 
@@ -264,7 +266,7 @@ export default function App() {
                 <li>خطة المذاكرة الذكية لتعلّم أسرع</li>
                 <li>تطبيق عملي وتدريبات لغوية تفاعلية</li>
               </ul>
-              <button className="btn btn-gold" onClick={() => handleBook('ورشة مجانية - 15 مايو')}>
+              <button className="btn btn-gold" onClick={() => handleBook(workshopInfo.workshopLabel)}>
                 سجّل في الورشة مجاناً <I.Arrow size={16} />
               </button>
             </div>
@@ -410,7 +412,7 @@ export default function App() {
         <div className="container">
           <div className="foot-grid">
             <div className="foot-brand">
-              <h4>Vamos Academy</h4>
+              <img src="/logo.png" alt="Vamos Languages Academy" className="foot-logo-img" />
               <p>أكاديمية متخصصة في تعليم اللغات. نؤمن إن كل طالب يستحق تجربة تعليمية تفاعلية، ممتعة، وفعّالة.</p>
               <div className="socials">
                 <a href="#" aria-label="Facebook"><I.Facebook /></a>
@@ -456,6 +458,20 @@ export default function App() {
             <span>© 2026 Vamos Languages Academy. جميع الحقوق محفوظة.</span>
             <span><em>¡Hablamos español!</em></span>
           </div>
+
+          <div style={{ textAlign: 'center', paddingTop: 12 }}>
+            <button
+              onClick={() => setShowAdmin(true)}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: 'rgba(255,255,255,0.15)', fontSize: 11, padding: '4px 8px',
+                letterSpacing: 1,
+              }}
+              aria-label="Admin"
+            >
+              ⚙
+            </button>
+          </div>
         </div>
       </footer>
 
@@ -466,6 +482,9 @@ export default function App() {
 
       {/* ========== TOAST ========== */}
       <Toast msg={toast.msg} kind={toast.kind} show={toast.show} />
+
+      {/* ========== ADMIN ========== */}
+      {showAdmin && <AdminPage onClose={() => setShowAdmin(false)} />}
     </>
   )
 }

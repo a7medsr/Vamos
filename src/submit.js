@@ -19,8 +19,8 @@ export async function submitLead(form) {
   if (callMeBotApiKey) {
     const url = `https://api.callmebot.com/whatsapp.php?phone=${CONFIG.whatsappNumber}&text=${encodeURIComponent(message)}&apikey=${callMeBotApiKey}`
     tasks.push(
-      fetch(url)
-        .then((r) => ({ ok: r.ok, source: 'callmebot' }))
+      fetch(url, { mode: 'no-cors' })
+        .then(() => ({ ok: true, source: 'callmebot' }))
         .catch(() => ({ ok: false, source: 'callmebot' }))
     )
   }

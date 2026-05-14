@@ -63,21 +63,8 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
   padding:16px 24px;max-width:var(--max);margin:0 auto;gap:24px;
   position:relative;
 }
-.logo{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:.5px;flex-shrink:0}
-.logo-mark{
-  width:38px;height:38px;border-radius:50%;
-  background:var(--red);
-  display:grid;place-items:center;position:relative;
-  box-shadow:0 4px 12px rgba(200,16,46,.25);
-}
-.logo-mark::after{
-  content:"";position:absolute;
-  top:-3px;left:50%;transform:translateX(-50%);
-  width:14px;height:6px;background:var(--ink);border-radius:50%;
-}
-.logo-mark span{color:#fff;font-weight:900;font-size:11px;letter-spacing:.5px;font-family:'Playfair Display',serif;font-style:italic}
-.logo-text{font-family:'Playfair Display',serif;font-weight:900;font-size:24px;font-style:italic;color:var(--ink)}
-.logo-text em{color:var(--red);font-style:italic}
+.logo{display:flex;align-items:center;flex-shrink:0}
+.logo-img{height:54px;width:auto;display:block;}
 
 .nav-links{display:flex;align-items:center;gap:28px;font-size:15px;font-weight:500}
 .nav-links a{color:var(--ink-soft);transition:.2s}
@@ -553,7 +540,7 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 /* ============ FOOTER ============ */
 footer{background:var(--ink);color:#C8C0B5;padding:60px 0 24px}
 .foot-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:40px;margin-bottom:40px}
-.foot-brand h4{font-family:'Playfair Display',serif;font-weight:900;font-style:italic;color:#fff;font-size:26px;margin:0 0 12px}
+.foot-logo-img{height:80px;width:auto;display:block;margin:0 0 14px;filter:brightness(0) invert(1);}
 .foot-brand p{font-size:14px;line-height:1.8;margin:0 0 20px;max-width:300px}
 .socials{display:flex;gap:10px}
 .socials a{

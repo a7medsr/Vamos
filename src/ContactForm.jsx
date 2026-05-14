@@ -1,19 +1,23 @@
 import { useState, useEffect } from 'react'
 import { submitLead } from './submit.js'
-import { CONFIG } from './config.js'
+import { getWorkshopInfo } from './config.js'
 import { I } from './icons.jsx'
 
-const COURSE_OPTIONS = [
-  { value: 'ورشة مجانية - 15 مايو', label: '🎁 الورشة المجانية (15 مايو)' },
-  { value: 'كورس A1 - $60', label: 'كورس A1 — $60' },
-  { value: 'كورس A2 - $65', label: 'كورس A2 — $65' },
-  { value: 'كورس B1 - $90', label: 'كورس B1 — $90' },
-  { value: 'الباكدج الشاملة A1+A2+B1 - $190', label: '⭐ الباكدج الشاملة (A1+A2+B1) — $190' },
-  { value: 'كورس المحادثة - $100', label: 'كورس المحادثة — $100' },
-  { value: 'استفسار عام', label: 'استفسار عام' },
-]
+function getCourseOptions() {
+  const { workshopLabel, workshopOptionLabel } = getWorkshopInfo()
+  return [
+    { value: workshopLabel, label: workshopOptionLabel },
+    { value: 'كورس A1 - $60', label: 'كورس A1 — $60' },
+    { value: 'كورس A2 - $65', label: 'كورس A2 — $65' },
+    { value: 'كورس B1 - $90', label: 'كورس B1 — $90' },
+    { value: 'الباكدج الشاملة A1+A2+B1 - $190', label: '⭐ الباكدج الشاملة (A1+A2+B1) — $190' },
+    { value: 'كورس المحادثة - $100', label: 'كورس المحادثة — $100' },
+    { value: 'استفسار عام', label: 'استفسار عام' },
+  ]
+}
 
 export function ContactForm({ preselectedCourse, onShowToast }) {
+  const COURSE_OPTIONS = getCourseOptions()
   const [form, setForm] = useState({
     name: '', phone: '', country: '', course: '', message: '',
   })

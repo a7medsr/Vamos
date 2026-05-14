@@ -5,7 +5,7 @@
 
 export const CONFIG = {
   // === Your WhatsApp number (for the floating button + direct chat link) ===
-  whatsappNumber: '201064298604',
+  whatsappNumber: '201029949035',
 
   // === Workshop details ===
   workshop: {
@@ -24,7 +24,7 @@ export const CONFIG = {
     //  2. Send it this exact message: I allow callmebot to send me messages
     //  3. Wait for the reply — it gives you an API key like "1234567"
     //  4. Paste the key below. Leave blank to disable.
-    callMeBotApiKey: '', // <-- paste your CallMeBot API key here
+    callMeBotApiKey: '5189369',
 
     // --- OPTION B: Email via Web3Forms (free, very reliable) ---
     // Setup (one-time, 30 seconds):
@@ -41,4 +41,50 @@ export const CONFIG = {
     online: '100%',
     levels: 'A1→B1',
   },
+}
+
+// ─── Workshop date management (admin can override via localStorage) ───────────
+const STORAGE_KEY = 'vamos_workshop_date'
+
+export function getWorkshopDate() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (saved) return saved
+  } catch {}
+  return CONFIG.workshop.date
+}
+
+export function setWorkshopDate(isoDate) {
+  try {
+    localStorage.setItem(STORAGE_KEY, isoDate)
+  } catch {}
+}
+
+const DAY_NAMES = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
+const MONTH_NAMES = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر']
+
+export function getWorkshopInfo() {
+  const isoDate = getWorkshopDate()
+  const [datePart, timePart] = isoDate.split('T')
+  const [year, month, day] = datePart.split('-').map(Number)
+  const [hours, minutes] = timePart.split(':').map(Number)
+
+  const dayName = DAY_NAMES[new Date(year, month - 1, day).getDay()]
+  const monthName = MONTH_NAMES[month - 1]
+
+  const period = hours >= 12 ? 'مساءً' : 'صباحاً'
+  const h = hours > 12 ? hours - 12 : hours === 0 ? 12 : hours
+  const minStr = minutes > 0 ? `:${String(minutes).padStart(2, '0')}` : ':00'
+
+  return {
+    isoDate,
+    dateDisplay: `${dayName} ${day} ${monthName} ${year}`,
+    dayName,
+    dayNum: day,
+    monthName,
+    year,
+    timeDisplay: `${h}${minStr} ${period}`,
+    workshopLabel: `ورشة مجانية - ${day} ${monthName}`,
+    workshopOptionLabel: `🎁 الورشة المجانية (${day} ${monthName})`,
+  }
 }
