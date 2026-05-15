@@ -63,9 +63,9 @@ export function setWorkshopDate(isoDate) {
 const DAY_NAMES = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
 const MONTH_NAMES = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر']
 
-export function getWorkshopInfo() {
-  const isoDate = getWorkshopDate()
-  const [datePart, timePart] = isoDate.split('T')
+export function getWorkshopInfo(isoDate) {
+  const isoDate_ = isoDate || CONFIG.workshop.date
+  const [datePart, timePart] = isoDate_.split('T')
   const [year, month, day] = datePart.split('-').map(Number)
   const [hours, minutes] = timePart.split(':').map(Number)
 
@@ -77,7 +77,7 @@ export function getWorkshopInfo() {
   const minStr = minutes > 0 ? `:${String(minutes).padStart(2, '0')}` : ':00'
 
   return {
-    isoDate,
+    isoDate: isoDate_,
     dateDisplay: `${dayName} ${day} ${monthName} ${year}`,
     dayName,
     dayNum: day,

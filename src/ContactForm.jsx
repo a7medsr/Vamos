@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react'
 import { submitLead } from './submit.js'
-import { getWorkshopInfo } from './config.js'
 import { I } from './icons.jsx'
 
-function getCourseOptions() {
-  const { workshopLabel, workshopOptionLabel } = getWorkshopInfo()
-  return [
+export function ContactForm({ preselectedCourse, onShowToast, workshopLabel, workshopOptionLabel }) {
+  const COURSE_OPTIONS = [
     { value: workshopLabel, label: workshopOptionLabel },
     { value: 'كورس A1 - $60', label: 'كورس A1 — $60' },
     { value: 'كورس A2 - $65', label: 'كورس A2 — $65' },
@@ -14,10 +12,6 @@ function getCourseOptions() {
     { value: 'كورس المحادثة - $100', label: 'كورس المحادثة — $100' },
     { value: 'استفسار عام', label: 'استفسار عام' },
   ]
-}
-
-export function ContactForm({ preselectedCourse, onShowToast }) {
-  const COURSE_OPTIONS = getCourseOptions()
   const [form, setForm] = useState({
     name: '', phone: '', country: '', course: '', message: '',
   })

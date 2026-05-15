@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { CONFIG, getWorkshopInfo } from './config.js'
 import { COURSES, PACKAGE, CONVERSATION, TESTIMONIALS } from './data.js'
 import { CourseCard } from './CourseCard.jsx'
@@ -12,12 +12,12 @@ const WA_HREF =
 
 // ============ COUNTDOWN HOOK ============
 function useCountdown(targetDate) {
-  const target = useRef(new Date(targetDate).getTime()).current
   const [now, setNow] = useState(() => Date.now())
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000)
     return () => clearInterval(id)
   }, [])
+  const target = new Date(targetDate).getTime()
   const diff = Math.max(0, target - now)
   const d = Math.floor(diff / 86400000)
   const h = Math.floor((diff % 86400000) / 3600000)
@@ -73,7 +73,16 @@ export default function App() {
   const [toast, setToast] = useState({ msg: '', kind: 'ok', show: false })
   const [preselectedCourse, setPreselectedCourse] = useState('')
   const [showAdmin, setShowAdmin] = useState(false)
-  const workshopInfo = getWorkshopInfo()
+  const [workshopDate, setWorkshopDate] = useState(CONFIG.workshop.date)
+
+  useEffect(() => {
+    fetch('/workshop.json')
+      .then((r) => r.json())
+      .then((data) => { if (data?.date) setWorkshopDate(data.date) })
+      .catch(() => {})
+  }, [])
+
+  const workshopInfo = getWorkshopInfo(workshopDate)
   const cd = useCountdown(workshopInfo.isoDate)
 
   useReveal()
@@ -402,6 +411,8 @@ export default function App() {
             <ContactForm
               preselectedCourse={preselectedCourse}
               onShowToast={showToast}
+              workshopLabel={workshopInfo.workshopLabel}
+              workshopOptionLabel={workshopInfo.workshopOptionLabel}
             />
           </div>
         </div>
@@ -484,7 +495,7 @@ export default function App() {
       <Toast msg={toast.msg} kind={toast.kind} show={toast.show} />
 
       {/* ========== ADMIN ========== */}
-      {showAdmin && <AdminPage onClose={() => setShowAdmin(false)} />}
+      {showAdmin && <AdminPage onClose={() => setShowAdmin(false)} currentDate={workshopDate} />}
     </>
   )
 }
