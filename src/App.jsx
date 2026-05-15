@@ -76,7 +76,7 @@ export default function App() {
   const [workshopDate, setWorkshopDate] = useState(CONFIG.workshop.date)
 
   useEffect(() => {
-    fetch('/workshop.json')
+    fetch('/api/workshop')
       .then((r) => r.json())
       .then((data) => { if (data?.date) setWorkshopDate(data.date) })
       .catch(() => {})

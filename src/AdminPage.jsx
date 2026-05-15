@@ -1,8 +1,6 @@
 import { useState } from 'react'
 
 const PASSWORD = 'Admin1313'
-const REPO = 'a7medsr/Vamos'
-const FILE_PATH = 'public/workshop.json'
 
 const DAY_NAMES = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
 const MONTH_NAMES = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر']
@@ -24,36 +22,6 @@ function buildPreview(date, time) {
   return `${dayName} ${day} ${monthName} ${year} — ${h}${minStr} ${period} بتوقيت القاهرة`
 }
 
-async function pushToGitHub(token, isoDate) {
-  const headers = {
-    Authorization: `Bearer ${token}`,
-    'Content-Type': 'application/json',
-    Accept: 'application/vnd.github+json',
-  }
-
-  const getRes = await fetch(
-    `https://api.github.com/repos/${REPO}/contents/${FILE_PATH}`,
-    { headers }
-  )
-  if (!getRes.ok) throw new Error(`خطأ في GitHub: ${getRes.status} — تحقق من التوكن`)
-  const { sha } = await getRes.json()
-
-  const content = btoa(JSON.stringify({ date: isoDate }, null, 2) + '\n')
-  const putRes = await fetch(
-    `https://api.github.com/repos/${REPO}/contents/${FILE_PATH}`,
-    {
-      method: 'PUT',
-      headers,
-      body: JSON.stringify({
-        message: `chore: update workshop date to ${isoDate}`,
-        content,
-        sha,
-      }),
-    }
-  )
-  if (!putRes.ok) throw new Error(`فشل التحديث: ${putRes.status}`)
-}
-
 export default function AdminPage({ onClose, currentDate }) {
   const [auth, setAuth] = useState(false)
   const [pw, setPw] = useState('')
@@ -65,10 +33,6 @@ export default function AdminPage({ onClose, currentDate }) {
   const { date: initDate, time: initTime } = isoToInputs(currentDate || '2026-05-15T20:00:00+02:00')
   const [date, setDate] = useState(initDate)
   const [time, setTime] = useState(initTime)
-  const [token, setToken] = useState(() => {
-    try { return localStorage.getItem('vamos_gh_token') || '' } catch { return '' }
-  })
-  const [rememberToken, setRememberToken] = useState(true)
 
   function login(e) {
     e.preventDefault()
@@ -83,14 +47,13 @@ export default function AdminPage({ onClose, currentDate }) {
     const isoDate = `${date}T${time}:00+02:00`
 
     try {
-      await pushToGitHub(token.trim(), isoDate)
-
-      try {
-        if (rememberToken) localStorage.setItem('vamos_gh_token', token.trim())
-        else localStorage.removeItem('vamos_gh_token')
-        localStorage.removeItem('vamos_workshop_date')
-      } catch {}
-
+      const res = await fetch('/api/workshop', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: PASSWORD, date: isoDate }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Server error')
       setSaved(true)
     } catch (err) {
       setSaveError(err.message || 'حدث خطأ، حاول مرة أخرى')
@@ -123,11 +86,9 @@ export default function AdminPage({ onClose, currentDate }) {
           </form>
         ) : saved ? (
           <div style={s.form}>
-            <div style={s.successMsg}>✓ تم الحفظ على GitHub بنجاح!</div>
+            <div style={s.successMsg}>✓ تم تحديث التاريخ بنجاح!</div>
             <p style={{ margin: 0, fontSize: 14, color: '#444', lineHeight: 1.8 }}>
-              Vercel بتعمل deploy تلقائياً —
-              الموقع هيتحدث خلال <strong>دقيقة أو دقيقتين</strong>.
-              <br />بعدها كل المستخدمين هيشوفوا التاريخ الجديد لما يفتحوا الصفحة.
+              التاريخ الجديد محفوظ — كل المستخدمين هيشوفوه فوراً لما يفتحوا الصفحة.
             </p>
             <button style={{ ...s.btn, background: '#444' }} onClick={onClose}>إغلاق</button>
           </div>
@@ -160,45 +121,10 @@ export default function AdminPage({ onClose, currentDate }) {
               </div>
             )}
 
-            <hr style={{ border: 'none', borderTop: '1px solid #eee', margin: '4px 0' }} />
-
-            <label style={s.label}>
-              GitHub Token
-              <a
-                href="https://github.com/settings/tokens?type=beta"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ fontSize: 11, color: '#2563eb', marginRight: 8, fontWeight: 400 }}
-              >
-                أنشئ توكن من هنا ←
-              </a>
-            </label>
-            <input
-              type="password"
-              value={token}
-              onChange={(e) => setToken(e.target.value)}
-              style={{ ...s.input, direction: 'ltr' }}
-              placeholder="github_pat_..."
-              required
-            />
-            <p style={s.tokenNote}>
-              عند إنشاء التوكن: اختار <strong>Only select repositories → Vamos</strong>، وفعّل صلاحية <strong>Contents: Read and write</strong>
-            </p>
-
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', marginTop: -4 }}>
-              <input
-                type="checkbox"
-                checked={rememberToken}
-                onChange={(e) => setRememberToken(e.target.checked)}
-                style={{ width: 16, height: 16 }}
-              />
-              <span style={{ fontSize: 13, color: '#555' }}>تذكر التوكن على هذا الجهاز</span>
-            </label>
-
             {saveError && <div style={s.errBanner}>{saveError}</div>}
 
             <button type="submit" style={{ ...s.btn, opacity: saving ? 0.7 : 1 }} disabled={saving}>
-              {saving ? '⏳ جاري الحفظ على GitHub...' : 'حفظ وتحديث الموقع'}
+              {saving ? '⏳ جاري الحفظ...' : 'حفظ وتحديث الموقع'}
             </button>
           </form>
         )}
@@ -215,7 +141,7 @@ const s = {
   },
   panel: {
     background: '#fff', borderRadius: 16, padding: '32px',
-    width: '100%', maxWidth: 480, margin: '0 16px',
+    width: '100%', maxWidth: 460, margin: '0 16px',
     boxShadow: '0 20px 60px rgba(0,0,0,0.3)', fontFamily: 'inherit',
     maxHeight: '90vh', overflowY: 'auto',
   },
@@ -228,8 +154,8 @@ const s = {
     background: 'none', border: 'none', fontSize: 20, cursor: 'pointer',
     color: '#888', padding: '4px 8px', borderRadius: 6, lineHeight: 1,
   },
-  form: { display: 'flex', flexDirection: 'column', gap: 12 },
-  label: { fontWeight: 700, fontSize: 14, color: '#333', marginBottom: -4 },
+  form: { display: 'flex', flexDirection: 'column', gap: 14 },
+  label: { fontWeight: 700, fontSize: 14, color: '#333', marginBottom: -6 },
   input: {
     width: '100%', padding: '11px 14px', fontSize: 15,
     border: '1.5px solid #ddd', borderRadius: 8, outline: 'none',
@@ -248,10 +174,6 @@ const s = {
     padding: '12px 14px', fontSize: 14, color: '#2d3a8c',
   },
   previewLabel: { color: '#666' },
-  tokenNote: {
-    margin: 0, fontSize: 12, color: '#777', lineHeight: 1.7,
-    background: '#f9f9f9', padding: '8px 12px', borderRadius: 6,
-  },
   successMsg: {
     background: '#d4edda', color: '#155724', border: '1px solid #c3e6cb',
     borderRadius: 8, padding: '16px', fontSize: 15, fontWeight: 700,
